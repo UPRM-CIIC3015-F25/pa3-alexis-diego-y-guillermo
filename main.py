@@ -18,7 +18,7 @@ if __name__ == "__main__":
     pygame.mixer.music.set_volume(0.3)
     pygame.mixer.music.play(-1)
     State.set_screen(screen)
-    
+     
     # --- Initial States ---
     startScreen = StartState()
     player = PlayerInfo()

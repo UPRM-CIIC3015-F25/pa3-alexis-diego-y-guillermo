@@ -780,6 +780,24 @@ class GameState(State):
         #       # Apply that Joker’s effect
         #       self.activated_jokers.add("joker card name")
         #   The last line ensures the Joker is visibly active and its effects are properly applied.
+        if 'The Joker' in owned:
+            self.mult += 4
+            self.activated_jokers.add('The Joker')
+        if 'Micheal Myers' in owned:
+            self.mult += random.randit(0, 23)
+            self.activated_jokers.add('Micheal Myers')
+        if 'Fibonacci' in owned:
+            fib = {1,2,3,5,8}
+            for card in self.currentHand:
+                if card.rank in fib:
+                    self.mult += 8
+            self.activated_jokers.add('Fibonacci')
+        if 'Gauntlet' in owned:
+            self.chips += 250
+            self.hand -= 2
+            self.activated_jokers.add('Gauntlet')
+        if 'Ogre' in owned:
+            hands_played = self.hands
 
         procrastinate = False
 

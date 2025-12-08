@@ -1,5 +1,7 @@
 import pygame
 import random
+
+from Levels.SubLevel import SubLevel
 from States.Menus.DebugState import DebugState
 from States.Core.StateClass import State
 from Cards.Card import Suit, Rank
@@ -23,29 +25,6 @@ class GameState(State):
     def __init__(self, nextState: str = "", player: PlayerInfo = None):
         super().__init__(nextState)
         # ----------------------------Deck and Hand initialization----------------------------
-        self.playerInfo = player # playerInfo object
-        self.deck = State.deckManager.shuffleDeck(State.deckManager.createDeck(self.playerInfo.levelManager.curSubLevel))
-        self.hand = State.deckManager.dealCards(self.deck, 8)
-        self.cards = {}
-        
-        self.jokerDeck = State.deckManager.createJokerDeck()
-        self.playerJokers = []
-        self.jokers = {}
-        # track which jokers activated for the current played hand (used to offset their draw)
-        self.activated_jokers = set()
-        
-        # for joker in self.jokerDeck:
-        #     print(joker.name)
-        
-        self.cardsSelectedList = []
-        self.cardsSelectedRect = {}
-        self.playedHandNameList = ['']
-        self.used = []
-
-        self.redTint = pygame.image.load("Graphics/Backgrounds/redTint.png").convert_alpha()
-        self.redTint = pygame.transform.scale(self.redTint, (1300, 750))
-        self.showRedTint = False
-        self.redAlpha = 0
 
         self.gameOverSound = pygame.mixer.Sound("Graphics/Sounds/gameEnd.mp3")
         self.gameOverSound.set_volume(0.6)  # adjust loudness if needed
@@ -143,6 +122,14 @@ class GameState(State):
         shade = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
         shade.fill((0, 0, 0, 180))
         destSurface.blit(shade, rect.topleft)
+
+    def refill(self):
+        if len(self.hand) >= 8:
+            return
+        newCard = State.deckManager.drawCard(self.deck)
+        self.hand.append(newCard)
+        self.refillHandToEight()
+
 
     def update(self):
         # Always update LevelManager first so win/levelFinished flags are fresh
@@ -535,7 +522,29 @@ class GameState(State):
     #     - A clear base case to stop recursion when all parts are done
     #   Avoid any for/while loops — recursion alone must handle the repetition.
     def calculate_gold_reward(self, playerInfo, stage=0):
-            return 0
+        Blind_level = playerInfo.levelManager.curSubLevel
+        players_score = playerInfo.roundScore
+        players_target = playerInfo.score
+
+        if Blind_level.bossLevel:
+            base = 10
+        elif Blind_level.blind.name == "BIG":
+            base = 8
+        elif Blind_level.blind.name == "SMALL":
+            base = 4
+        else:
+            base = 0
+
+        if players_target > 0:
+            math_bonus = int(min(5,max(0,(players_score - players_target) / players_target * 5)))
+            if math_bonus > 5:
+                math_bonus = 5
+        else:
+            math_bonus = 0
+        if stage >= math_bonus:
+            return base + stage
+        return self.calculate_gold_reward(playerInfo, stage + 1)
+
 
     def updateCards(self, posX, posY, cardsDict, cardsList, scale=1.5, spacing=90, baseYOffset=-20, leftShift=40):
         cardsDict.clear()
@@ -549,19 +558,41 @@ class GameState(State):
                 y -= 50
             cardsDict[card] = pygame.Rect(x, y, new_w, new_h)
 
-    # TODO (TASK 2) - Implement a basic card-sorting system without using built-in sort functions.
+    # Done (TASK 2) - Implement a basic card-sorting system without using built-in sort functions.
     #   Create a 'suitOrder' list (Hearts, Clubs, Diamonds, Spades), then use nested loops to compare each card
     #   with the ones after it. Depending on the mode, sort by rank first or suit first, swapping cards when needed
     #   until the entire hand is ordered correctly.
     def SortCards(self, sort_by: str = "suit"):
+        for card in self.hand:
+            print(card)
         suitOrder = [Suit.HEARTS, Suit.CLUBS, Suit.DIAMONDS, Suit.SPADES]         # Define the order of suits
-        self.updateCards(400, 520, self.cards, self.hand, scale=1.2)
+        rankOrder = [Rank.TWO, Rank.THREE, Rank.FOUR, Rank.FIVE, Rank.SIX, Rank.SEVEN, Rank.EIGHT, Rank.NINE, Rank.TEN, Rank.JACK, Rank.QUEEN, Rank.KING, Rank.ACE]
+        deck = []
+        if sort_by == "suit":
+            for suit in suitOrder:
+                for card in self.hand:
+                    if card.suit == suit:
+                        deck.append(card)
+        elif sort_by == "rank":
+            for rank in rankOrder:
+                for card in self.hand:
+                    if card.rank == rank:
+                        deck.append(card)
+        self.hand = deck
+        print("--------")
+        for card in self.hand:
+            print(card)
+        self.hand = deck
+        self.updateCards(400,520,self.cards,self.hand, scale=1.2)
+
+
 
     def checkHoverCards(self):
         mousePos = pygame.mouse.get_pos()
         for card, rect in self.cards.items():
             if rect.collidepoint(mousePos):
                 break
+
     
     def drawCardTooltip(self):
         mousePos = pygame.mouse.get_pos()
@@ -781,23 +812,50 @@ class GameState(State):
         #       self.activated_jokers.add("joker card name")
         #   The last line ensures the Joker is visibly active and its effects are properly applied.
         if 'The Joker' in owned:
-            self.mult += 4
+            hand_mult += 4
             self.activated_jokers.add('The Joker')
         if 'Micheal Myers' in owned:
-            self.mult += random.randit(0, 23)
+            hand_mult += random.randit(0, 23)
             self.activated_jokers.add('Micheal Myers')
         if 'Fibonacci' in owned:
             fib = {1,2,3,5,8}
-            for card in self.currentHand:
+            for card in self.hand:
                 if card.rank in fib:
-                    self.mult += 8
+                    hand_mult += 8
             self.activated_jokers.add('Fibonacci')
         if 'Gauntlet' in owned:
-            self.chips += 250
+            hand_chips += 250
             self.hand -= 2
             self.activated_jokers.add('Gauntlet')
         if 'Ogre' in owned:
-            hands_played = self.hands
+            count = len(owned)
+            hand_mult += count * 3
+            self.activated_jokers.add('Ogre')
+        if 'Straw Hat' in owned:
+            hands_played = len(self.used)
+            hand_chips += 100
+            hand_chips -= 5 * hands_played
+            self.activated_jokers.add('Straw Hat')
+        if 'Hog Rider' in owned:
+            if self.playedHandName == 'Straight'
+                hand_chips += 100
+            self.activated_jokers.add('Hog Rider')
+        if '? Block' in owned:
+            if len(self.hand) == 4:
+                hand_chips += 4
+            self.activated_jokers.add('? Block')
+        if 'Hogwarts' in owned:
+            for card in self.hand:
+                if card.rank == 1:
+                    hand_mult += 4
+                    hand_chips += 20
+            self.activated_jokers.add('Hogwarts')
+        if '802' in owned:
+            hands_left = self.playerInfo.levelManager.handsLeft
+            if hands_left == 0:
+                hand_mult *= 2
+                hand_chips *= 2
+            self.activated_jokers.add('802')
 
         procrastinate = False
 
@@ -835,4 +893,18 @@ class GameState(State):
     #   recursion finishes, reset card selections, clear any display text or tracking lists, and
     #   update the visual layout of the player's hand.
     def discardCards(self, removeFromHand: bool):
+        if len(self.cardsSelectedList) == 0:
+            if removeFromHand:
+                self.refill()
+            self.cardsSelectedList.clear()
+            self.cardsSelectedRect.clear()
+
         self.updateCards(400, 520, self.cards, self.hand, scale=1.2)
+
+        if removeFromHand:
+            discard_card = self.cardsSelectedList.pop()
+            if discard_card in self.hand:
+                self.hand.remove(discard_card)
+        self.discardCards(removeFromHand)
+
+

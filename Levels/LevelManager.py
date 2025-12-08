@@ -41,7 +41,6 @@ class LevelManager():
         if self.curSubLevel and not self.curSubLevel.finished:  # Check if current sublevel is finished
             if self.p.roundScore >= self.curSubLevel.score:     # If player's round score meets or exceeds sublevel score requirement
                 self.curSubLevel.finished = True
-                self.p.roundScore = 0
                 if self.next_unfinished_sublevel() is None:  # Check if all sublevels in the current ante are finished
                     self.p.playerAnte += 1
                     # If no more levels exist, set playerWins to True
@@ -58,5 +57,12 @@ class LevelManager():
     #   It should check each sublevel in order and return the first one that isn’t finished.
     #   Stop once all have been checked or one is found. Avoid using loops. (USE RECURSIONS)
     def next_unfinished_sublevel(self, index=0):
-        return None
-    
+        def next_unfinished_sublevel(self, index=0):
+            if len(self.curLevel) <= index:
+                return None
+            elif not self.curLevel[index].finished:
+                return self.curLevel[index]
+            else:
+                return self.next_unfinished_sublevel(index + 1)
+
+

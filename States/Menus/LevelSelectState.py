@@ -91,6 +91,16 @@ class LevelSelectState(State):
                 #   Finally, make sure to reset the player’s round score to 0 at the end of this setup.
                 #   Avoid unnecessary repetition—use clear condition structure to make the logic readable.
                 self.playerInfo.roundScore = 0
+                self.playerInfo.amountOfHands = 4
+                self.playerInfo.amountOfDiscards = 4
+
+                boss_stage = lm.curSubLevel.bossLevel
+                if boss_stage == "The Needle":
+                    self.playerInfo.amountOfHands = 1
+                elif boss_stage == "The Water":
+                    self.playerInfo.amountOfDiscards = 0
+                elif boss_stage == "The Manacle":
+                    self.playerInfo.amountOfHands -= 1
 
                 # Set target score for the new sublevel
                 self.playerInfo.score = self.playerInfo.levelManager.curSubLevel.score

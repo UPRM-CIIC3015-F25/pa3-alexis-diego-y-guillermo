@@ -1,5 +1,7 @@
 import pygame
 import random
+
+from Levels.SubLevel import SubLevel
 from States.Menus.DebugState import DebugState
 from States.Core.StateClass import State
 from Cards.Card import Suit, Rank
@@ -535,7 +537,29 @@ class GameState(State):
     #     - A clear base case to stop recursion when all parts are done
     #   Avoid any for/while loops — recursion alone must handle the repetition.
     def calculate_gold_reward(self, playerInfo, stage=0):
-            return 0
+        Blind_level = playerInfo.levelManager.curSubLevel
+        players_score = playerInfo.roundScore
+        players_target = playerInfo.score
+
+        if Blind_level.bossLevel:
+            base = 10
+        elif Blind_level.blind.name == "BIG":
+            base = 8
+        elif Blind_level.blind.name == "SMALL":
+            base = 4
+        else:
+            base = 0
+
+        if players_target > 0:
+            math_bonus = int(min(5,max(0,(players_score - players_target) / players_target * 5)))
+            if math_bonus > 5:
+                math_bonus = 5
+        else:
+            math_bonus = 0
+        if stage >= math_bonus:
+            return base + stage
+        return self.calculate_gold_reward(playerInfo, stage + 1)
+
 
     def updateCards(self, posX, posY, cardsDict, cardsList, scale=1.5, spacing=90, baseYOffset=-20, leftShift=40):
         cardsDict.clear()

@@ -44,20 +44,19 @@ def evaluate_hand(hand: list[Card]):
                 else:
                     rank_dic[card.rank] += 1
     #These lines check for: Straight Flush, Straight, and Flush
-    straight_check_list = rankOrder[rankOrder.index(rank_list[0]):rankOrder.index(rankOrder[-1])]
-    straight_flush = False
-    for x in straight_check_list:
-        for y in rank_list:
-            if x == y:
-                straight_flush = True
-            else:
-                straight_flush = False
-                break
-        if straight_flush == True and len(suit_dic) == 1:
-            return "Straight Flush"
-        elif straight_flush == True:
-            return "Straight"
-    if len(suit_dic) == 1 and straight_flush == False:
+    straight_check_list = rankOrder[rankOrder.index(rank_list[0]):rankOrder.index(rank_list[-1])]
+    straight_status = False
+    for i in range(0,len(straight_check_list)):
+        if rank_list[i] == straight_check_list[i]:
+            straight_status = True
+        else:
+            straight_status = False
+            break
+    if straight_status == True and len(suit_dic) == 1:
+        return "Straight Flush"
+    elif straight_status == True:
+        return "Straight"
+    if len(suit_dic) == 1 and straight_status == False:
         return "Flush"
     #These lines check for full house and Two Pairs
     rank_values = sorted(rank_dic.values())

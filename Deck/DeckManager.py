@@ -148,7 +148,6 @@ class DeckManager:
         deck = []
         suits = {Suit.CLUBS, Suit.SPADES, Suit.HEARTS, Suit.DIAMONDS }
         ranks = {Rank.TWO, Rank.THREE, Rank.FOUR, Rank.FIVE, Rank.SIX, Rank.SEVEN, Rank.EIGHT, Rank.NINE, Rank.TEN, Rank.JACK, Rank.QUEEN, Rank.KING, Rank.ACE}
-
         for suit in suits:
             for rank in ranks:
                 images = cardImages.get((suit, rank))

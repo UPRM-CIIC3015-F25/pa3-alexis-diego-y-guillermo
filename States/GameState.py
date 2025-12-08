@@ -25,7 +25,30 @@ class GameState(State):
     def __init__(self, nextState: str = "", player: PlayerInfo = None):
         super().__init__(nextState)
         # ----------------------------Deck and Hand initialization----------------------------
+        self.playerInfo = player  # playerInfo object
+        self.deck = State.deckManager.shuffleDeck(
+    State.deckManager.createDeck(self.playerInfo.levelManager.curSubLevel))
+        self.hand = State.deckManager.dealCards(self.deck, 8)
+        self.cards = {}
 
+        self.jokerDeck = State.deckManager.createJokerDeck()
+        self.playerJokers = []
+        self.jokers = {}
+        # track which jokers activated for the current played hand (used to offset their draw)
+        self.activated_jokers = set()
+
+        # for joker in self.jokerDeck:
+        #     print(joker.name)
+
+        self.cardsSelectedList = []
+        self.cardsSelectedRect = {}
+        self.playedHandNameList = ['']
+        self.used = []
+
+        self.redTint = pygame.image.load("Graphics/Backgrounds/redTint.png").convert_alpha()
+        self.redTint = pygame.transform.scale(self.redTint, (1300, 750))
+        self.showRedTint = False
+        self.redAlpha = 0
         self.gameOverSound = pygame.mixer.Sound("Graphics/Sounds/gameEnd.mp3")
         self.gameOverSound.set_volume(0.6)  # adjust loudness if needed
 
@@ -837,7 +860,7 @@ class GameState(State):
             hand_chips -= 5 * hands_played
             self.activated_jokers.add('Straw Hat')
         if 'Hog Rider' in owned:
-            if self.playedHandName == 'Straight'
+            if self.playedHandName == 'Straight':
                 hand_chips += 100
             self.activated_jokers.add('Hog Rider')
         if '? Block' in owned:

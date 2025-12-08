@@ -97,8 +97,33 @@ class ShopState(State):
     #   Each key should be the name of a hand (e.g., "Two Pair", "Straight"), and each value should be a dictionary
     #   containing its "chips", "multiplier", and "level" fields.
     #   Remember: the Sun upgrades all hands, while other planets upgrade only their specific one.
+    PLANET_UPGRADES = {
+        "Sun": "all",
+        "Mercury": ["Pair"],
+        "Venus": ["Two Pair"],
+        "Mars": ["Three of a Kind"],
+        "Jupiter": ["Full House"],
+        "Saturn": ["Flush"],
+        "Uranus": ["Straight"],
+        "Neptune": ["Four of a Kind"],
+        "Pluto": ["Straight Flush"]
+    }
+
     def activatePlanet(self, planet):
-        keys = HAND_SCORES.keys()
+        if planet not in PLANET_UPGRADES:
+            return
+        upgrade = PLANET_UPGRADES[planet]
+        if upgrade == 'all':
+            HAND_SCORES[hand][chips] *= 1.5
+            HAND_SCORES[hand][multiplier] *= 1.5
+            HAND_SCORES[hand][level] += 1
+        else:
+            for hand in upgrade:
+                HAND_SCORES[hand][chips] *= 1.5
+                HAND_SCORES[hand][multiplier] *= 1.5
+                HAND_SCORES[hand][level] += 1
+
+
 
     # ---------- Helpers ----------
     def _wrap_lines(self, text, font, max_width):

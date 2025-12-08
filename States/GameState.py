@@ -837,7 +837,7 @@ class GameState(State):
             hand_chips -= 5 * hands_played
             self.activated_jokers.add('Straw Hat')
         if 'Hog Rider' in owned:
-            if self.playedHandName == 'Straight'
+            if self.playedHandName == 'Straight':
                 hand_chips += 100
             self.activated_jokers.add('Hog Rider')
         if '? Block' in owned:

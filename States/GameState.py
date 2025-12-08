@@ -145,15 +145,6 @@ class GameState(State):
         shade = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
         shade.fill((0, 0, 0, 180))
         destSurface.blit(shade, rect.topleft)
-
-    def refill(self):
-        if len(self.hand) >= 8:
-            return
-        newCard = State.deckManager.drawCard(self.deck)
-        self.hand.append(newCard)
-        self.refillHandToEight()
-
-
     def update(self):
         # Always update LevelManager first so win/levelFinished flags are fresh
         self.playerInfo.levelManager.update()
@@ -838,7 +829,7 @@ class GameState(State):
             hand_mult += 4
             self.activated_jokers.add('The Joker')
         if 'Micheal Myers' in owned:
-            hand_mult += random.randit(0, 23)
+            hand_mult += random.randint(0, 23)
             self.activated_jokers.add('Micheal Myers')
         if 'Fibonacci' in owned:
             fib = {1,2,3,5,8}
@@ -916,18 +907,26 @@ class GameState(State):
     #   recursion finishes, reset card selections, clear any display text or tracking lists, and
     #   update the visual layout of the player's hand.
     def discardCards(self, removeFromHand: bool):
-        if len(self.cardsSelectedList) == 0:
-            if removeFromHand:
-                self.refill()
-            self.cardsSelectedList.clear()
-            self.cardsSelectedRect.clear()
+        if len(self.cardsSelectedList) > 0:
+            card = self.cardsSelectedList.pop()
 
+            if removeFromHand and card in self.hand:
+                self.hand.remove(card)
+                self.used.append(card)
+            card.isSelected = False
+            self.cardsSelectedRect.pop(card, None)
+            return self.discardCards(removeFromHand)
+
+        if len(self.hand) < 8:
+            newCard = State.deckManager.drawCard(self.deck)
+            self.hand.append(newCard)
+            return  self.discardCards(removeFromHand)
+
+        self.cardsSelectedList.clear()
+        self.cardsSelectedRect.clear()
+        self.playedHandName = ""
+        self.playerHandTextSurface = None
+        self.scoreBreakdownTextSurface = None
         self.updateCards(400, 520, self.cards, self.hand, scale=1.2)
-
-        if removeFromHand:
-            discard_card = self.cardsSelectedList.pop()
-            if discard_card in self.hand:
-                self.hand.remove(discard_card)
-        self.discardCards(removeFromHand)
 
 

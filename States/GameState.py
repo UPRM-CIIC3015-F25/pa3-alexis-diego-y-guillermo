@@ -865,7 +865,7 @@ class GameState(State):
                     hand_chips += 20
             self.activated_jokers.add('Hogwarts')
         if '802' in owned:
-            hands_left = self.playerInfo.levelManager.handsLeft
+            hands_left = self.playerInfo.amountOfHands
             if hands_left == 0:
                 hand_mult *= 2
                 hand_chips *= 2

@@ -115,9 +115,7 @@ class ShopState(State):
         else:
             planet_name = str(planet)
 
-        if planet_name not in self.PLANET_UPGRADES:
-            return
-        upgrade = self.PLANET_UPGRADES[planet]
+        upgrade = self.PLANET_UPGRADES.get(planet_name)
         if upgrade == "all":
             upgrade_hand = HAND_SCORES.keys()
         else:

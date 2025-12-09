@@ -110,7 +110,7 @@ class ShopState(State):
     }
 
     def activatePlanet(self, planet):
-        if planet not in PLANET_UPGRADES:
+        if planet not in self.PLANET_UPGRADES:
             return
         upgrade = PLANET_UPGRADES[planet]
         if upgrade == 'all':

@@ -99,7 +99,7 @@ class ShopState(State):
     #   Remember: the Sun upgrades all hands, while other planets upgrade only their specific one.
     PLANET_UPGRADES = {
         "Sun": "all",
-        "Mercury": ["Pair"],
+        "Mercury": ["One Pair"],
         "Venus": ["Two Pair"],
         "Mars": ["Three of a Kind"],
         "Jupiter": ["Full House"],
@@ -110,19 +110,27 @@ class ShopState(State):
     }
 
     def activatePlanet(self, planet):
-        if planet not in PLANET_UPGRADES:
-            return
-        upgrade = PLANET_UPGRADES[planet]
-        if upgrade == 'all':
-            HAND_SCORES[hand][chips] *= 1.5
-            HAND_SCORES[hand][multiplier] *= 1.5
-            HAND_SCORES[hand][level] += 1
+        if isinstance(planet,PlanetCard):
+            planet_name = planet.name
         else:
-            for hand in upgrade:
-                HAND_SCORES[hand][chips] *= 1.5
-                HAND_SCORES[hand][multiplier] *= 1.5
-                HAND_SCORES[hand][level] += 1
+            planet_name = str(planet)
 
+        if planet_name not in self.PLANET_UPGRADES:
+            return
+        upgrade = self.PLANET_UPGRADES[planet]
+        if upgrade == "all":
+            upgrade_hand = HAND_SCORES.keys()
+        else:
+            upgrade_hand = upgrade
+
+        for hand_name in upgrade_hand:
+            stats = HAND_SCORES.get(hand_name)
+            if not stats:
+                continue
+
+            stats["chips"] = int(stats["chips"] * 1.5)
+            stats["multiplier"] = int(stats["multiplier"] * 1.5)
+            stats["level"] += 1
 
 
     # ---------- Helpers ----------
